@@ -44,6 +44,6 @@ def build_agent(tools=None):
 
 if __name__ == "__main__":
     agent = build_agent()
-    user_input = "Research the latest advancement in AI"
+    user_input = "Research about GPT -6."
     response = agent.invoke({"messages":([HumanMessage(content=user_input)])})
     print(response["messages"][-1].content)
