@@ -60,8 +60,7 @@ async def build_agent(tools=None):
 async def main():
     agent = await build_agent()
     user_input = (
-        "Research about GPT-6, then write a short article from the findings "
-        "and save it as a new page in my Notion titled 'GPT-6 Article'."
+        "Share the 'GPT-6 Article' capabilities mentioned in the Notion page"
     )
     response = await agent.ainvoke({"messages": [HumanMessage(content=user_input)]})
     print(response["messages"][-1].content)
