@@ -13,14 +13,15 @@ _logger = logging.getLogger(__name__)
 
 # Only these Notion tools are given to the model. Replace the names with the
 # exact ones printed in your log on the first run.
-ALLOWED_MCP_TOOLS = {"notion-search", "notion-fetch", "notion-create-pages"}
+ALLOWED_MCP_TOOLS = {"notion-search", "notion-fetch", "notion-create-pages","search_emails", "read_email"}
 
 
 SYSTEM_PROMPT = """You are an orchestrator agent that can perform various tasks using the tools.
 For tasks that require specific tools, you will use the provided tools to accomplish the task.
 You have access to the following tools:
-1. Research Tool: searches the web with Serper and summarizes the findings.
-2. Notion tools: search and read pages, and create new pages in the user's Notion workspace.
+1. Research Tool: This tool searches the web with Serper and summarizes the findings.
+2. Notion tools: This tool searches and reads pages, and creates new pages in the user's Notion workspace.
+3. Gmail tools: This tool allows you to interact with my Gmail account to send and receive emails.
 
 For all generic tasks you will use your own capabilities to accomplish the task."""
 
@@ -60,7 +61,7 @@ async def build_agent(tools=None):
 async def main():
     agent = await build_agent()
     user_input = (
-        "Share the 'GPT-6 Article' capabilities mentioned in the Notion page"
+        "What's the latest email I received?"
     )
     response = await agent.ainvoke({"messages": [HumanMessage(content=user_input)]})
     print(response["messages"][-1].content)
