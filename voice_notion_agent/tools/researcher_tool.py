@@ -2,17 +2,13 @@ import logging
 
 import requests
 from langchain_core.tools import tool
-from langchain_groq import ChatGroq
 
 from .. import config
+from ..llm import get_chat_model
 
 _logger = logging.getLogger(__name__)
 
-_llm = ChatGroq(
-    model=config.CHAT_MODEL,
-    api_key=config.GROQ_API_KEY,
-    temperature=0.3,
-)
+_llm = get_chat_model()
 
 
 def _search(topic: str) -> str:
@@ -26,6 +22,16 @@ def _search(topic: str) -> str:
     resp.raise_for_status()
     results = resp.json().get("organic", [])
     return "\n".join(r.get("snippet", "") for r in results)
+
+
+def _as_text(content) -> str:
+    """Gemini can return a list of parts instead of one string."""
+    if isinstance(content, list):
+        return "".join(
+            part.get("text", "") if isinstance(part, dict) else str(part)
+            for part in content
+        )
+    return content
 
 
 @tool
@@ -53,7 +59,7 @@ def research(topic: str) -> str:
     Please provide a summary of the research results in a clear and concise manner.
     """
     summary = _llm.invoke(prompt)
-    return summary.content
+    return _as_text(summary.content)
 
 
 if __name__ == "__main__":
