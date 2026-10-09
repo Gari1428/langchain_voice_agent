@@ -11,3 +11,4 @@ python-multipart>=0.0.9
 requests>=2.31.0
 imageio-ffmpeg
 langchain-google-genai
+langchain-google-vertexai
