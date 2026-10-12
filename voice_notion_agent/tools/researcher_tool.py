@@ -7,8 +7,10 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from .. import config
 
-_llm = ChatGoogleGenerativeAI(
-    model=config.CHAT_MODEL,
+from langchain.chat_models import init_chat_model
+
+_llm = init_chat_model(
+    config.CHAT_MODEL,
     google_api_key=config.GOOGLE_API_KEY,
     temperature=0.3,
 )
@@ -33,7 +35,7 @@ def _serper_search(query: str, num: int = 5) -> dict:
 
 @tool
 def research_topic(topic: str) -> str:
-    """Research a topic on the web and return a concise markdown summary.
+    """Research a topic on the web and return a concise markdown summary.   
 
     Use this before creating a Notion page whenever the user asks you to
     "research", "look into", or "find out about" something. The summary

@@ -66,7 +66,7 @@ async def _try_build(build_fn, name: str):
             "(likely stuck waiting on an interactive auth flow) - it will report itself unavailable"
         )
         return None
-    except Exception as exc:  # noqa: BLE001 - any other startup failure is handled the same way
+    except Exception as exc:  
         print(f"[agent] {name} failed to initialize, it will report itself unavailable: {exc}")
         return None
 
@@ -74,7 +74,7 @@ async def _try_build(build_fn, name: str):
 async def build_agent():
     """Build the three specialists, wrap them as tools, and assemble the Orchestrator."""
     notion_agent, email_agent, research_agent = await asyncio.gather(
-        _try_build(build_notion_expert, "notion_expert"),
+        _try_build(build_notion_agent, "notion_expert"),
         _try_build(build_email_expert, "email_expert"),
         _try_build(build_researcher, "researcher_expert"),
     )
@@ -114,3 +114,14 @@ async def build_agent():
 
     tools = [notion_expert, email_expert, researcher_expert]
     return create_agent(config.CHAT_MODEL, tools=tools, system_prompt=ORCHESTRATOR_SYSTEM_PROMPT)
+
+if __name__ == "__main__":
+    async def main():
+        config.validate()
+        agent = await build_agent()
+        result = await agent.ainvoke(
+            {"messages": [HumanMessage(content="Give me latest notion article from my account")]}
+        )
+        print(result["messages"][-1].text)
+
+    asyncio.run(main())

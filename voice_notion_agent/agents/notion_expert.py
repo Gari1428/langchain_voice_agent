@@ -23,7 +23,7 @@ async def build_notion_agent():
     mcp_tools = await mcp_client.get_tools(server_name="notion")
 
     return create_agent(
-    f"google_genai:{config.CHAT_MODEL}",
+    config.CHAT_MODEL,
     tools=mcp_tools,
     system_prompt=SYSTEM_PROMPT,
 )
