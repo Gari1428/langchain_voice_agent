@@ -13,10 +13,11 @@ to cover Gmail, Notion, and research at once.
 """
 import asyncio
 import logging
+from typing import Awaitable, Callable
 
 from langchain.agents import create_agent
 from langchain.messages import HumanMessage
-from langchain_core.tools import tool
+from langchain_core.tools import StructuredTool
 
 from . import config
 from .agents.email_expert import build_email_expert
@@ -81,16 +82,19 @@ async def _try_build(build_fn, name: str):
         return None
 
 
-async def build_agent():
-    """Build the three specialists, wrap them as tools, and assemble the Orchestrator."""
+async def build_specialists() -> dict[str, Callable[[str], Awaitable[str]]]:
+    """Build the specialists as plain `async (request) -> str` callables.
+
+    Shared by the LangChain Orchestrator (wrapped as tools below) and the
+    Gemini Live voice session (exposed as function calls), so both front
+    ends delegate to exactly the same Notion/Gmail/research logic.
+    """
     notion_agent, email_agent = await asyncio.gather(
         _try_build(build_notion_agent, "notion_expert"),
         _try_build(build_email_expert, "email_expert"),
     )
 
-    @tool
     async def notion_expert(request: str) -> str:
-        """Delegate a Notion request (search, read, or create pages) to the Notion specialist."""
         if notion_agent is None:
             return "The Notion integration isn't available on this server right now."
         log_stage("Orchestrator -> notion_expert", input=request)
@@ -99,9 +103,7 @@ async def build_agent():
         log_stage("notion_expert -> Orchestrator", output=output)
         return output
 
-    @tool
     async def email_expert(request: str) -> str:
-        """Delegate a Gmail request (check, search, draft, or send email) to the email specialist."""
         if email_agent is None:
             return "The Gmail integration isn't available on this server right now."
         log_stage("Orchestrator -> email_expert", input=request)
@@ -110,9 +112,7 @@ async def build_agent():
         log_stage("email_expert -> Orchestrator", output=output)
         return output
 
-    @tool
     async def researcher_expert(topic: str) -> str:
-        """Delegate a web research request to the research specialist; returns a markdown summary."""
         # Call the search+summarize tool directly. It already does Serper search
         # and an LLM summary, so wrapping it in a whole extra "researcher" agent
         # only added two more sequential LLM round-trips (~2-4s) for no benefit.
@@ -121,7 +121,28 @@ async def build_agent():
         log_stage("researcher -> Orchestrator", output=output)
         return output
 
-    tools = [notion_expert, email_expert, researcher_expert]
+    return {
+        "notion_expert": notion_expert,
+        "email_expert": email_expert,
+        "researcher_expert": researcher_expert,
+    }
+
+
+SPECIALIST_DESCRIPTIONS = {
+    "notion_expert": "Delegate a Notion request (search, read, or create pages) to the Notion specialist.",
+    "email_expert": "Delegate a Gmail request (check, search, draft, or send email) to the email specialist.",
+    "researcher_expert": "Delegate a web research request to the research specialist; returns a markdown summary.",
+}
+
+
+async def build_agent(specialists: dict | None = None):
+    """Wrap the specialists as tools and assemble the Orchestrator."""
+    if specialists is None:
+        specialists = await build_specialists()
+    tools = [
+        StructuredTool.from_function(coroutine=fn, name=name, description=SPECIALIST_DESCRIPTIONS[name])
+        for name, fn in specialists.items()
+    ]
     return create_agent(get_chat_model(), tools=tools, system_prompt=ORCHESTRATOR_SYSTEM_PROMPT)
 
 if __name__ == "__main__":
