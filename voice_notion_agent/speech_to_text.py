@@ -1,17 +1,19 @@
-import os
-import requests
 import logging
+from functools import lru_cache
 from pathlib import Path
 
 import requests
 from openai import OpenAI
 
-import config
+from . import config
 
 _logger = logging.getLogger(__name__)
 
 
+@lru_cache(maxsize=1)
 def _get_client() -> OpenAI:
+    # Cached: building a new client per request means a fresh TLS handshake
+    # to Groq every time. One shared client reuses the connection pool.
     return OpenAI(
         api_key=config.GROQ_API_KEY,
         base_url="https://api.groq.com/openai/v1",

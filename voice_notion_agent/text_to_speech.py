@@ -1,15 +1,18 @@
 import subprocess
+from functools import lru_cache
 from pathlib import Path
 
 import imageio_ffmpeg
 from openai import OpenAI
 
-import config
+from . import config
 
 MAX_CHARS = 200  # Groq's Orpheus input limit per request
 
 
+@lru_cache(maxsize=1)
 def _get_client() -> OpenAI:
+    # Cached so the TLS connection to Groq is reused between requests.
     return OpenAI(
         api_key=config.GROQ_API_KEY,
         base_url="https://api.groq.com/openai/v1",

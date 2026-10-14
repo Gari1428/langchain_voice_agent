@@ -12,7 +12,10 @@ from ..mcp_client import mcp_client
 _logger = logging.getLogger(__name__)
 
 SYSTEM_PROMPT = """You are a Notion expert agent that can perform various tasks using the tools.
-You have access to the Notion tool that allow you to interact with your Notion account to retrieve and manage pages."""
+You have access to the Notion tool that allow you to interact with your Notion account to retrieve and manage pages.
+When asked to summarize or read a page, fetch the page's full content and work from that. Return the summary itself,
+not just the title and link.
+"""
 
 async def build_notion_agent():
     """Build a Notion expert agent with provided tools.
