@@ -2,7 +2,8 @@
 from langchain.agents import create_agent
 
 from .. import config
-from ..mcp_client import mcp_client
+from ..llm import get_chat_model
+from ..mcp_client import get_persistent_tools
 
 SYSTEM_PROMPT = """You are the Gmail specialist on a team of AI assistants.
 
@@ -22,9 +23,9 @@ dump of raw tool output.
 
 async def build_email_expert():
     """Discover the Gmail MCP tools and assemble the specialist agent."""
-    gmail_tools = await mcp_client.get_tools(server_name="gmail")
+    gmail_tools = await get_persistent_tools("gmail")
     return create_agent(
-        config.CHAT_MODEL,
+        get_chat_model(),
         tools=gmail_tools,
         system_prompt=SYSTEM_PROMPT,
     )

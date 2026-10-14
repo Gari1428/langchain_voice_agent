@@ -21,7 +21,9 @@ from langchain_core.tools import tool
 from . import config
 from .agents.email_expert import build_email_expert
 from .agents.notion_expert import build_notion_agent
+from .llm import get_chat_model
 from .logging_utils import log_stage
+from .mcp_client import close_sessions
 from .tools.researcher_tool import research_topic
 logging.getLogger("langchain_google_genai").setLevel(logging.ERROR)
 
@@ -120,7 +122,7 @@ async def build_agent():
         return output
 
     tools = [notion_expert, email_expert, researcher_expert]
-    return create_agent(config.CHAT_MODEL, tools=tools, system_prompt=ORCHESTRATOR_SYSTEM_PROMPT)
+    return create_agent(get_chat_model(), tools=tools, system_prompt=ORCHESTRATOR_SYSTEM_PROMPT)
 
 if __name__ == "__main__":
     async def main():
@@ -130,5 +132,6 @@ if __name__ == "__main__":
             {"messages": [HumanMessage(content="Give me latest means last saved notion article from my account and generate a summary of the article.")]}
         )
         print(result["messages"][-1].text)
+        await close_sessions()
 
     asyncio.run(main())

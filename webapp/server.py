@@ -34,6 +34,7 @@ from openai import BadRequestError
 from voice_notion_agent import config
 from voice_notion_agent.agent import build_agent
 from voice_notion_agent.logging_utils import log_stage
+from voice_notion_agent.mcp_client import close_sessions
 from voice_notion_agent.speech_to_text import transcribe_audio
 from voice_notion_agent.text_to_speech import MAX_CHARS, synthesize_speech
 
@@ -77,6 +78,7 @@ async def lifespan(app: FastAPI):
     global _agent
     _agent = await build_agent()
     yield
+    await close_sessions()
 
 
 app = FastAPI(title="Voice Gmail/Notion Agent Demo", lifespan=lifespan)

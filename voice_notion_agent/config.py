@@ -10,6 +10,8 @@ SERPER_API_KEY = os.getenv("SERPER_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 CHAT_MODEL = os.getenv("CHAT_MODEL", "google_genai:gemini-3.1-flash-lite")
+# Gemini 3 reasoning depth: "minimal" | "low" | "medium" | "high". Lower = faster.
+THINKING_LEVEL = os.getenv("THINKING_LEVEL", "low")
 STT_MODEL = os.getenv("STT_MODEL", "whisper-large-v3-turbo")
 TTS_MODEL = os.getenv("TTS_MODEL", "canopylabs/orpheus-v1-english")
 TTS_VOICE = os.getenv("TTS_VOICE", "autumn")

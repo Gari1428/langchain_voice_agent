@@ -3,17 +3,11 @@ import sys
 
 import requests
 from langchain_core.tools import tool
-from langchain_google_genai import ChatGoogleGenerativeAI
 
 from .. import config
+from ..llm import get_chat_model
 
-from langchain.chat_models import init_chat_model
-
-_llm = init_chat_model(
-    config.CHAT_MODEL,
-    google_api_key=config.GOOGLE_API_KEY,
-    temperature=0.3,
-)
+_llm = get_chat_model(temperature=0.3)
 
 SERPER_URL = "https://google.serper.dev/search"
 
