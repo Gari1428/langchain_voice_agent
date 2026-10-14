@@ -3,7 +3,7 @@ import asyncio
 import sys
 
 from langchain.agents import create_agent
-from voice_notion_agent import config
+from voice_notion_agent.llm import get_chat_model
 from voice_notion_agent.tools.researcher_tool import research_topic
 
 SYSTEM_PROMPT = """You are the research specialist on a team of AI assistants.
@@ -21,7 +21,7 @@ Return only the summary itself, ready to be handed to another assistant
 async def build_researcher():
     """Assemble the research specialist agent."""
     return create_agent(
-        config.CHAT_MODEL,
+        get_chat_model(),
         tools=[research_topic],
         system_prompt=SYSTEM_PROMPT,
     )

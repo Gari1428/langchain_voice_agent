@@ -6,7 +6,7 @@ from langchain.messages import HumanMessage
 
 from ..import config
 from ..llm import get_chat_model
-from ..mcp_client import mcp_client
+from ..mcp_client import get_persistent_tools
 
 
 _logger = logging.getLogger(__name__)
@@ -23,10 +23,10 @@ async def build_notion_agent():
     Returns:
         create_agent: An instance of the created Notion expert agent.
     """
-    mcp_tools = await mcp_client.get_tools(server_name="notion")
+    mcp_tools = await get_persistent_tools("notion")
 
     return create_agent(
-    config.CHAT_MODEL,
+    get_chat_model(),
     tools=mcp_tools,
     system_prompt=SYSTEM_PROMPT,
 )
